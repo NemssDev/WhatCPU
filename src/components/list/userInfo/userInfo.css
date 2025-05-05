@@ -154,6 +154,13 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         width: 300px;
         /* Set a width for the modal */
+
+        button {
+            width: 15vh;
+            height: 5vh;
+            margin-top: 5vh;
+            text-align: left;
+        }
     }
 
     textarea {

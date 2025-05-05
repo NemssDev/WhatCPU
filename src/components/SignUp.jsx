@@ -1,6 +1,6 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc } from "firebase/firestore";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { auth, db } from "../lib/firebase";
 
@@ -10,7 +10,8 @@ function SignUpForm() {
     email: "",
     password: ""
   });
-
+  const [error, setError] = useState(false);
+  const [googleErrorMessage, setGoogleErrorMessage] = useState("");
   const handleChange = (evt) => {
     const value = evt.target.value;
     setState({
@@ -18,6 +19,58 @@ function SignUpForm() {
       [evt.target.name]: value
     });
   };
+  const handleGoogleSignUp = async (e) => {
+    e.preventDefault();
+
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+
+      const user = result.user;
+      console.log(user.displayName);
+      await setDoc(doc(db, "users", res.user.uid), {
+        username: user.displayName,
+        email: user.email,
+        id: result.uid,
+        blocked: [],
+        friends: [],
+      });
+      await setDoc(doc(db, "userchats", res.user.uid), {
+        username: user.displayName,
+        email: user.email,
+        id: result.uid,
+        blocked: [],
+        friends: [],
+      });
+      toast.success("Welcome CPUer, Enjoy the Experience");
+    } catch (err) {
+      const errorMessage = err.message;
+      const errorCode = err.code;
+
+      setError(true);
+
+      switch (errorCode) {
+        case "auth/operation-not-allowed":
+          setGoogleErrorMessage("Email/password accounts are not enabled.");
+          break;
+        case "auth/operation-not-supported-in-this-environment":
+          setGoogleErrorMessage("HTTP protocol is not supported. Please use HTTPS.")
+          break;
+        case "auth/popup-blocked":
+          setGoogleErrorMessage("Popup has been blocked by the browser. Please allow popups for this website.")
+          break;
+        case "auth/popup-closed-by-user":
+          setGoogleErrorMessage("Popup has been closed by the user before finalizing the operation. Please try again.")
+          break;
+        default:
+          setGoogleErrorMessage(errorMessage);
+          break;
+      }
+    }
+  };
+
+
 
   const handleAvatar = () => {
     if (e.target.files[0]) {
@@ -64,7 +117,7 @@ function SignUpForm() {
           <a href="#" className="social">
             <i className="fab fa-facebook-f" />
           </a>
-          <a href="#" className="social">
+          <a href="#" className="social" onClick={handleGoogleSignUp}>
             <i className="fab fa-google" />
           </a>
           <a href="#" className="social">

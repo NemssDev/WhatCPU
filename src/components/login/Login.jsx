@@ -6,6 +6,7 @@ import "./styles.css";
 export default function Login() {
     const [type, setType] = useState("signIn");
     const handleOnClick = text => {
+        
         if (text !== type) {
             setType(text);
             return;

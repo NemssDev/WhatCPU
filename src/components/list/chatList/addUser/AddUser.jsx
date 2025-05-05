@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useChatStore } from "../../../../lib/chatStore";
 import { db } from "../../../../lib/firebase";
@@ -28,6 +28,70 @@ const AddUser = ({ setAddMode, refreshUsers }) => {
 
         fetchCurrentUser();
     }, [currentUser?.id, setCurrentUser]);
+    const handleAddOrSelect = async (userToAdd) => {
+        if (!userToAdd || currentUser.friends?.includes(userToAdd.id)) {
+            console.log("This user is already a friend.");
+            return;
+        }
+
+        setLoadingUserId(userToAdd.id);
+        const userChatsRef = collection(db, "userchats");
+        const currentUserChatRef = doc(userChatsRef, currentUser.id);
+
+        try {
+            const newChatRef = doc(collection(db, "chats"));
+            await setDoc(newChatRef, {
+                createdAt: serverTimestamp(),
+                messages: [],
+            });
+
+            const currentUserChatSnap = await getDoc(currentUserChatRef);
+            if (!currentUserChatSnap.exists()) {
+                await setDoc(currentUserChatRef, { chats: [] });
+            }
+
+            const addedUserChatRef = doc(userChatsRef, userToAdd.id);
+            const addedUserChatSnap = await getDoc(addedUserChatRef);
+            if (!addedUserChatSnap.exists()) {
+                await setDoc(addedUserChatRef, { chats: [] });
+            }
+
+            await updateDoc(addedUserChatRef, {
+                chats: arrayUnion({
+                    chatId: newChatRef.id,
+                    lastMessage: "",
+                    receiverId: currentUser.id,
+                    updatedAt: Date.now(),
+                }),
+            });
+
+            await updateDoc(currentUserChatRef, {
+                chats: arrayUnion({
+                    chatId: newChatRef.id,
+                    lastMessage: "",
+                    receiverId: userToAdd.id,
+                    updatedAt: Date.now(),
+                }),
+            });
+
+            const currentUserRef = doc(db, "users", currentUser.id);
+            await updateDoc(currentUserRef, {
+                friends: arrayUnion(userToAdd.id)
+            });
+
+            setUsers((prevUsers) =>
+                prevUsers.map(user =>
+                    user.id === userToAdd.id ? { ...user, alreadyFriends: true, added: true } : user
+                )
+            );
+
+            console.log("User added to friends list and chat created with ID:", newChatRef.id);
+        } catch (err) {
+            console.log("Error adding user or creating chat:", err);
+        } finally {
+            setLoadingUserId(null);
+        }
+    };
 
     const handleBlock = async (userToBlock) => {
         if (!userToBlock || !currentUser) return;

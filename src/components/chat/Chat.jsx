@@ -26,9 +26,9 @@ const Chat = () => {
   const { chatId, user, isCurrentUserBlocked, isReceiverBlocked } = useChatStore();
   const { currentUser } = useUserStore();
   const [text, setText] = useState("");
-  const [images, setImages] = useState([]); // State for multiple images
+  const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState(null);
-  const toggleDetail = useAppStore(state => state.toggleDetail); // This toggles the Detail component
+  const toggleDetail = useAppStore(state => state.toggleDetail);
   const isDetailOpen = useAppStore(state => state.isDetailOpen);
   const centerRef = useRef(null);
 
@@ -48,7 +48,7 @@ const Chat = () => {
     if (centerRef.current) {
       centerRef.current.scrollTo({
         top: centerRef.current.scrollHeight,
-        behavior: 'smooth' // Smooth scrolling
+        behavior: 'smooth'
       });
     }
   }, [chat]);

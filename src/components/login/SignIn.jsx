@@ -24,6 +24,7 @@ function SignInForm() {
   }
 
   const handleOnSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.target);
@@ -62,6 +63,7 @@ function SignInForm() {
           type="email"
           placeholder="Email"
           name="email"
+          id="email"
           value={state.email}
           onChange={handleChange}
         />

@@ -13,7 +13,7 @@ const UserInfo = () => {
     url: ""
   });
   const { currentUser } = useUserStore();
-  const { resetChat } = useChatStore(); // Get resetChat from chat store
+  const { resetChat } = useChatStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [bio, setBio] = useState(currentUser.bio || "");
@@ -161,8 +161,10 @@ const UserInfo = () => {
                 placeholder="Write your bio..."
                 rows="5"
               />
-              <button onClick={handleBioSubmit}>Save Bio</button>
-              <button onClick={() => setShowBioModal(false)}>Cancel</button>
+              <center>
+                <button onClick={handleBioSubmit}>Save</button>
+                <button onClick={() => setShowBioModal(false)}>Cancel</button>
+              </center>
             </div>
           </div>
         )
